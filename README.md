@@ -1,6 +1,6 @@
 # Data Engineer Task
 
-* Create a fork of this repository in your own GitHub account
+* Clone this repository on your local machine and create a new one in your own GitHub account
 * Please consider your git history as this will be reviewed
 * Commit & push code regularly
 * Use the Netflix csv file as your data source
