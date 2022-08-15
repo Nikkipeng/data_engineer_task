@@ -38,6 +38,10 @@ Output - Invalid / strange data report
 
 - List the actresses that have appeared in a movie with Woody Harrelson more than once.
 
+**Step 6** : Combine all the previous steps into a solid Python programme that has unit testing. Feel free to create a main file that can be ran via a Python command line.
+
+Output – Python programme
+
 ## Data
 
 | **Column** | **Value** | **Description** |
