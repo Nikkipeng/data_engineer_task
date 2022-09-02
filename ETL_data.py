@@ -64,7 +64,7 @@ for tup in data.itertuples():
     if not tup.date_added:
         date_added.append('')
     else:
-        date = tup.date_added.trim().split(' ')
+        date = tup.date_added.strip().split(' ')
         date_added.append('{}-{}-{}'.format(date[2], month_dict[date[0].strip(',')], date[1].strip(',')))
         # date_added.append({'show_id': tup.show_id, 'monty': month_dict[date[0].strip(',')],
         #                'day': date[1].strip(','), 'year': date[2]})
