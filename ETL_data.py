@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine, Table, MetaData
 from sqlalchemy import text
@@ -67,31 +68,43 @@ for tup in data.itertuples():
         # date_added.append({'show_id': tup.show_id, 'monty': month_dict[date[0].strip(',')],
         #                'day': date[1].strip(','), 'year': date[2]})
 
+# make dataframes
 actor = pd.DataFrame(actor)
-actor.iloc[1058].actor = ['']  # s1059 cast is same as description
-actor = actor.explode('actor')
-director = pd.DataFrame(director).explode('director')
+actor.iloc[1058]['name'] = ['']  # s1059 cast is same as description
+actor = actor.explode('name').drop_duplicates().reset_index(drop=True)
+director = pd.DataFrame(director).explode('name').drop_duplicates().reset_index(drop=True)
 list_category = pd.DataFrame(list_category).explode('category')
 country = pd.DataFrame(country).explode('category')
 data.date_added = date_added
 
+# make actor, director, category table (id, name)
 actor_names = actor.name.unique()
-actors = {}
-for i in range(actor_names):
-    actors[i] = actor_names[i]
+actors = [(str(i), actor_names[i]) for i in range(len(actor_names))]
 actors = pd.DataFrame(actors)
-actors.columns = ['id']
+actors.columns = ['actor_id', 'name']
+show_actor = actor.merge(actors, on=['name'], how='left')
 # 14 columns at the first then found s1059 cast is same as description
 # then max length is 6 Emmanuel "King Kong" Nii Adom Quaye that is a name
-actor['first_name'] = [name.split(' ')[0] for name in actor_names]
-actor['last_name'] = [name.split(' ')[-1] for name in actor_names]
-actor = actor[['show_id', 'first_name', 'last_name']]
+actors['first_name'] = [tup.name.split(' ')[0] for tup in actors.itertuples()]
+actors['last_name'] = [tup.name.split(' ')[-1] for tup in actors.itertuples()]
 
+director_names = director.name.unique()
+director_names = np.delete(director_names, 0)
+directors = [(str(i), director_names[i]) for i in range(len(director_names))]
+directors = pd.DataFrame(directors)
+directors.columns = ['director_id', 'name']
+show_director = director.merge(directors, on=['name'], how='left')
 director_names = director.name.str.split(' ')
 # max length is 5 Mohd  Khairul  Azri  Bin  Md  Noor that is a name
-director['first_name'] = [name[0] for name in director_names]
-director['last_name'] = [name[-1] for name in director_names]
-director = director[['show_id', 'first_name', 'last_name']]
+directors['first_name'] = [tup.name.split(' ')[0] for tup in directors.itertuples()]
+directors['last_name'] = [tup.name.split(' ')[0] for tup in directors.itertuples()]
+
+categories = list_category.category.unique()
+categories = [(str(i), categories[i]) for i in range(len(categories))]
+categories = pd.DataFrame(categories)
+categories.columns = ['category_id', 'category']
+show_category = list_category.merge(categories, on=['category'], how='left')
+
 
 
 # data clean
@@ -129,7 +142,7 @@ show_director_table = Table('show_director', metadata, autoload=True, autoload_w
 # test delete
 # sql_session.execute(actor_table.delete())
 
-sql_session.execute(actor_table.insert(), actor.to_dict('records'))
+sql_session.execute(actor_table.insert(), actors.to_dict('records'))
 sql_session.execute(category_table.insert(), category.to_dict('records'))
 sql_session.execute(country_table.insert(), country.to_dict('records'))
 sql_session.execute(director_table.insert(), actor.to_dict('records'))
