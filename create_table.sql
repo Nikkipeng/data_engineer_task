@@ -80,10 +80,33 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
+-- Table `netflix_db`.`show_country`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `netflix_db`.`show_country` (
+  `country_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `show_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`country_id`, `show_id`),
+  INDEX `fk_show_country_country_idx` (`country_id` ASC),
+  INDEX `fk_show_country_show_idx` (`show_id` ASC),
+  CONSTRAINT `fk_show_country_show`
+    FOREIGN KEY (`show_id`)
+    REFERENCES `netflix_db`.`show` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_show_country_country`
+    FOREIGN KEY (`country_id`)
+    REFERENCES `netflix_db`.`country` (`country`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+DEFAULT CHARACTER SET = utf8;
+
+
+-- -----------------------------------------------------
 -- Table `netflix_db`.`director`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `netflix_db`.`director` (
   `director_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`director_id`),
@@ -98,7 +121,7 @@ CREATE TABLE IF NOT EXISTS `netflix_db`.`show_director` (
   `director_id` INT UNSIGNED NOT NULL,
   `show_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`director_id`, `show_id`),
-  INDEX `idx_fk_show_id` (`show_id` ASC),
+  INDEX `idx_fk_show_director_id` (`show_id` ASC),
   INDEX `fk_show_director_director_idx` (`director_id` ASC),
   CONSTRAINT `fk_show_director_director`
     FOREIGN KEY (`director_id`)
@@ -118,6 +141,7 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `netflix_db`.`actor` (
   `actor_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`actor_id`),
@@ -132,7 +156,7 @@ CREATE TABLE IF NOT EXISTS `netflix_db`.`show_actor` (
   `actor_id` INT UNSIGNED NOT NULL,
   `show_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`actor_id`, `show_id`),
-  INDEX `idx_fk_show_id0` (`show_id` ASC),
+  INDEX `idx_fk_show_actor_idx` (`show_id` ASC),
   INDEX `fk_show_actor_actor_idx` (`actor_id` ASC),
   CONSTRAINT `fk_show_actor_actor`
     FOREIGN KEY (`actor_id`)
