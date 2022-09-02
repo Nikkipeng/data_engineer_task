@@ -170,15 +170,6 @@ show_director_table = Table('show_director', metadata, autoload=True, autoload_w
 # test delete
 # sql_session.execute(actor_table.delete())
 
-sql_session.execute(actor_table.insert(), actors.to_dict('records'))
-sql_session.execute(category_table.insert(), categories.to_dict('records'))
-sql_session.execute(country_table.insert(), countries.to_dict('records'))
-sql_session.execute(director_table.insert(), directors.to_dict('records'))
-sql_session.execute(show_table.insert(), show.to_dict('records'))
-sql_session.execute(list_category_table.insert(), show_category.to_dict('records'))
-sql_session.execute(show_actor_table.insert(), show_actor.to_dict('records'))
-sql_session.execute(show_country_table.insert(), show_country.to_dict('records'))
-sql_session.execute(show_director_table.insert(), show_director.to_dict('records'))
 
 from import_data import insert_record
 insert_record(sql_session, actors, actor_table)
@@ -191,6 +182,14 @@ insert_record(sql_session, show_actor, show_actor_table)
 insert_record(sql_session, show_country, show_country_table)
 insert_record(sql_session, show_director, show_director_table)
 
+# enhance gender
+from enhance_data import get_gender
+gender = [get_gender(name) for name in actors.name]
+# gender = []
+# for tup in actors.itertuples():
+#     print(tup.actor_id)
+#     print(tup.name)
+#     gender.append(get_gender(tup.name))
 
 
 
