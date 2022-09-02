@@ -43,6 +43,7 @@ for line in sql_script:
 # read csv file
 data = pd.read_csv('netflix_titles.csv').fillna('')  # 7787 rows
 # data = data[data.show_id.isna()] skipped empty rows
+data['id'] = [show_id[1:] for show_id in data.show_id]
 
 # mutation
 month_dict = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5,
@@ -55,15 +56,15 @@ country = []
 date_added = []
 
 for tup in data.itertuples():
-    director.append({'show_id': tup.show_id, 'name': tup.director.split(', ')})
-    actor.append({'show_id': tup.show_id, 'name': tup.cast.split(', ')})
-    list_category.append({'show_id': tup.show_id, 'category': tup.listed_in.split(', ')})
-    country.append({'show_id': tup.show_id, 'category': tup.country.split(', ')})
+    director.append({'show_id': tup.id, 'name': tup.director.split(', ')})
+    actor.append({'show_id': tup.id, 'name': tup.cast.split(', ')})
+    list_category.append({'show_id': tup.id, 'category': tup.listed_in.split(', ')})
+    country.append({'show_id': tup.id, 'country': tup.country.split(', ')})
 
     if not tup.date_added:
         date_added.append('')
     else:
-        date = tup.date_added.split(' ')
+        date = tup.date_added.trim().split(' ')
         date_added.append('{}-{}-{}'.format(date[2], month_dict[date[0].strip(',')], date[1].strip(',')))
         # date_added.append({'show_id': tup.show_id, 'monty': month_dict[date[0].strip(',')],
         #                'day': date[1].strip(','), 'year': date[2]})
@@ -74,37 +75,63 @@ actor.iloc[1058]['name'] = ['']  # s1059 cast is same as description
 actor = actor.explode('name').drop_duplicates().reset_index(drop=True)
 director = pd.DataFrame(director).explode('name').drop_duplicates().reset_index(drop=True)
 list_category = pd.DataFrame(list_category).explode('category')
-country = pd.DataFrame(country).explode('category')
+country = pd.DataFrame(country).explode('country')
 data.date_added = date_added
 
 # make actor, director, category table (id, name)
-actor_names = actor.name.unique()
+actor_names = set(actor.name)
+actor_names.pop()
+actor_names = list(actor_names)
 actors = [(str(i), actor_names[i]) for i in range(len(actor_names))]
 actors = pd.DataFrame(actors)
 actors.columns = ['actor_id', 'name']
 show_actor = actor.merge(actors, on=['name'], how='left')
+show_actor = show_actor[~show_actor.actor_id.isna()]
+
 # 14 columns at the first then found s1059 cast is same as description
 # then max length is 6 Emmanuel "King Kong" Nii Adom Quaye that is a name
-actors['first_name'] = [tup.name.split(' ')[0] for tup in actors.itertuples()]
-actors['last_name'] = [tup.name.split(' ')[-1] for tup in actors.itertuples()]
+actors['first_name'] = [name.split(' ')[0] for name in actors.name]
+actors['last_name'] = [name.split(' ')[-1] for name in actors.name]
 
-director_names = director.name.unique()
+director_names = set(director.name)
+director_names.pop()
+director_names = list(director_names)
 director_names = np.delete(director_names, 0)
 directors = [(str(i), director_names[i]) for i in range(len(director_names))]
 directors = pd.DataFrame(directors)
 directors.columns = ['director_id', 'name']
 show_director = director.merge(directors, on=['name'], how='left')
+show_director = show_director[~show_director.director_id.isna()]
 director_names = director.name.str.split(' ')
 # max length is 5 Mohd  Khairul  Azri  Bin  Md  Noor that is a name
-directors['first_name'] = [tup.name.split(' ')[0] for tup in directors.itertuples()]
-directors['last_name'] = [tup.name.split(' ')[0] for tup in directors.itertuples()]
+directors['first_name'] = [name.split(' ')[0] for name in directors.name]
+directors['last_name'] = [name.split(' ')[0] for name in directors.name]
 
-categories = list_category.category.unique()
+categories = set(list_category.category)
+categories.pop()
+categories = list(categories)
 categories = [(str(i), categories[i]) for i in range(len(categories))]
 categories = pd.DataFrame(categories)
 categories.columns = ['category_id', 'category']
 show_category = list_category.merge(categories, on=['category'], how='left')
+show_category = show_category[~show_category.category_id.isna()]
 
+countries = set(country.country)
+countries.pop()
+countries = list(countries)
+countries = [(str(i), countries[i]) for i in range(len(countries))]
+countries = pd.DataFrame(countries)
+countries.columns = ['country_id', 'country']
+show_country = country.merge(countries, on=['country'], how='left')
+show_country = show_country[~show_country.country_id.isna()]
+
+
+# show table
+show = data[['id', 'show_id', 'type', 'title', 'date_added',
+             'release_year', 'rating', 'duration', 'description']].copy()
+show.duration = [duration.split(' ')[0] for duration in show.duration]
+show.rating = [None if not rate else rate for rate in show.rating]
+show.date_added = [None if not date_added else date_added for date_added in show.date_added]
 
 
 # data clean
@@ -114,7 +141,7 @@ data.title = [tup.title.replace('\u200b', '') for tup in data.itertuples()]
 # import data
 Base = declarative_base()  # create ORM
 metadata = MetaData()
-
+# tables
 # | actor                |
 # | category             |
 # | country              |
@@ -124,6 +151,7 @@ metadata = MetaData()
 # | show_actor           |
 # | show_country         |
 # | show_director        |
+# connect tables
 actor_table = Table('actor', metadata, autoload=True, autoload_with=engine)
 category_table = Table('category', metadata, autoload=True, autoload_with=engine)
 country_table = Table('country', metadata, autoload=True, autoload_with=engine)
@@ -143,14 +171,26 @@ show_director_table = Table('show_director', metadata, autoload=True, autoload_w
 # sql_session.execute(actor_table.delete())
 
 sql_session.execute(actor_table.insert(), actors.to_dict('records'))
-sql_session.execute(category_table.insert(), category.to_dict('records'))
-sql_session.execute(country_table.insert(), country.to_dict('records'))
-sql_session.execute(director_table.insert(), actor.to_dict('records'))
-sql_session.execute(list_category_table.insert(), actor.to_dict('records'))
-sql_session.execute(show_table.insert(), actor.to_dict('records'))
-sql_session.execute(show_actor_table.insert(), actor.to_dict('records'))
-sql_session.execute(show_country_table.insert(), actor.to_dict('records'))
-sql_session.execute(show_director_table.insert(), actor.to_dict('records'))
+sql_session.execute(category_table.insert(), categories.to_dict('records'))
+sql_session.execute(country_table.insert(), countries.to_dict('records'))
+sql_session.execute(director_table.insert(), directors.to_dict('records'))
+sql_session.execute(show_table.insert(), show.to_dict('records'))
+sql_session.execute(list_category_table.insert(), show_category.to_dict('records'))
+sql_session.execute(show_actor_table.insert(), show_actor.to_dict('records'))
+sql_session.execute(show_country_table.insert(), show_country.to_dict('records'))
+sql_session.execute(show_director_table.insert(), show_director.to_dict('records'))
+
+from import_data import insert_record
+insert_record(sql_session, actors, actor_table)
+insert_record(sql_session, categories, category_table)
+insert_record(sql_session, countries, country_table)
+insert_record(sql_session, directors, director_table)
+insert_record(sql_session, show_category, list_category_table)
+insert_record(sql_session, show, show_table)
+insert_record(sql_session, show_actor, show_actor_table)
+insert_record(sql_session, show_country, show_country_table)
+insert_record(sql_session, show_director, show_director_table)
+
 
 
 
