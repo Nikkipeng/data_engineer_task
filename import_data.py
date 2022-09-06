@@ -50,3 +50,27 @@ def insert_record(sql_session, data, table):
     # finally:
     sql_session.close()
     print('Update database completed')
+
+
+def update_record(sql_session, data, table, index: str, column: str):
+    print('Replace records')
+    update_length = len(data)
+    batch_size = 10000
+    batch_number = update_length // batch_size + 1
+    # with self.sql_session.begin_nested():
+    for batch_index in range(batch_number):
+        batch_table = data[batch_index * batch_size: (batch_index + 1) * batch_size]
+        for tup in batch_table.itertuples():
+            update_query = table.update().values(
+                **{column: getattr(tup, column)}).where(getattr(table.c, index) == getattr(tup, index))
+            sql_session.execute(update_query)
+        try:
+            sql_session.commit()
+            print('update {} records completed'.format(len(batch_table)))
+        except Exception:
+            print('Commit update failed, rollback')
+            sql_session.rollback()
+            raise
+    # finally:
+    sql_session.close()
+    print('Update database completed')

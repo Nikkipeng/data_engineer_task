@@ -18,7 +18,7 @@ def _make_session(db):
     return sql_session
 
 
-class UpdateScore:
+class UpdateTable:
     def __init__(self, db_engine, update_list: list, action: str):
         self.db = db_engine
         self.sql_session = _make_session(self.db)
@@ -31,31 +31,47 @@ class UpdateScore:
         else:
             self.replace_records()
 
-    def replace_records(self):
+    def replace_records(sql_session, table, update_table):
         print('Replace records')
-        update_length = len(self.update_list)
+        update_length = len(update_table)
         batch_size = 10000
         batch_number = update_length // batch_size + 1
         # with self.sql_session.begin_nested():
         for batch_index in range(batch_number):
-            batch_length = min(batch_size, update_length -
-                               batch_index * batch_size)
-            for record_index in range(batch_length):
-                record = self.update_list[batch_index * batch_size +
-                                          record_index]
-                record_obj = self.privco_score_table(**record)
-                self.sql_session.merge(record_obj)
+            batch_table = update_table[batch_index * batch_size, (batch_index + 1) * batch_size]
+            for tup in batch_table.itertuples():
+                update_query = table.update().values(
+                    gender=tup.gender).where(table.c.actor_id == tup.actor_id)
+                sql_session.execute(update_query)
             try:
-                print('Commit changes')
-                self.sql_session.commit()
+                sql_session.commit()
+                print('update {} records completed'.format(len(batch_table)))
             except Exception:
                 print('Commit update failed, rollback')
-                self.sql_session.rollback()
+                sql_session.rollback()
                 raise
         # finally:
-        self.sql_session.close()
+        sql_session.close()
         print('Update database completed')
 
+    def update_database(self):
+        sql_session = self._make_session()
+        company_round_table = self._bind_table()
+        for tup in self.update_table.itertuples():
+            update_query = company_round_table.update().values({
+                company_round_table.c.valuation: tup.valuation_calculated,
+                company_round_table.c.valuation_notes: tup.new_valuation_notes
+            }).where(company_round_table.c.id == tup.Index)
+            sql_session.execute(update_query)
+        try:
+            sql_session.commit()
+            print('update {} records completed'.format(len(self.update_table)))
+        except Exception:
+            sql_session.rollback()
+            print('update database failed, rollback')
+            raise
+        finally:
+            sql_session.close()
     def delete_records(self):
         print('Delete records')
         delete_query = self.privco_score_table.__table__.delete().where(

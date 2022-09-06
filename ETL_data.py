@@ -138,6 +138,7 @@ show.date_added = [None if not date_added else date_added for date_added in show
 # empty character \u200b in title
 data.title = [tup.title.replace('\u200b', '') for tup in data.itertuples()]
 
+
 # import data
 Base = declarative_base()  # create ORM
 metadata = MetaData()
@@ -183,17 +184,27 @@ insert_record(sql_session, show_country, show_country_table)
 insert_record(sql_session, show_director, show_director_table)
 
 # enhance gender
-from enhance_data import get_gender
-gender = [get_gender(name) for name in actors.name]
+# from get_gender import get_gender
+# gender = [get_gender(name) for name in actors.name]
 # gender = []
 # for tup in actors.itertuples():
 #     print(tup.actor_id)
 #     print(tup.name)
 #     gender.append(get_gender(tup.name))
+actors_for_gender = actors[['actor_id', 'name']]
+actors_for_gender.to_csv('actors_for_gender.csv', index=False)
+# run getting gender
+# python get_gender --log_name request_gender --out_name gender.csv --input_name actors_for_gender.csv
 
+gender = pd.read_csv('gender.csv')
+gender.actor_id = gender.actor_id.astype(str)
+show_country = country.merge(countries, on=['country'], how='left')
+actors_gender = actors.merge(gender, on=['actor_id'], how='left')
 
+# ALTER TABLE actor ADD gender varchar(45);
 
-
+from import_data import update_record
+update_record(sql_session, gender, actor_table, 'actor_id', 'gender')
 
 
 
