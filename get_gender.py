@@ -1,3 +1,4 @@
+import sys
 import requests
 import json
 import pandas as pd
@@ -47,3 +48,6 @@ def _run():
         output_writer.writerow({'actor_id': tup.actor_id, 'gender': gender})
         logger.info('Id {} finished'.format(tup.actor_id))
 
+
+if __name__ == '__main__':
+    sys.exit(_run())
