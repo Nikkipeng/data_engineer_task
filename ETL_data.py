@@ -198,11 +198,8 @@ actors_for_gender.to_csv('actors_for_gender.csv', index=False)
 
 gender = pd.read_csv('gender.csv')
 gender.actor_id = gender.actor_id.astype(str)
-show_country = country.merge(countries, on=['country'], how='left')
-actors_gender = actors.merge(gender, on=['actor_id'], how='left')
 
 # ALTER TABLE actor ADD gender varchar(45);
-
 from import_data import update_record
 update_record(sql_session, gender, actor_table, 'actor_id', 'gender')
 
