@@ -194,7 +194,7 @@ insert_record(sql_session, show_director, show_director_table)
 actors_for_gender = actors[['actor_id', 'name']]
 actors_for_gender.to_csv('actors_for_gender.csv', index=False)
 # run getting gender
-# python get_gender --log_name request_gender --out_name gender.csv --input_name actors_for_gender.csv
+# python get_gender.py --log_name request_gender --out_name gender.csv --input_name actors_for_gender.csv
 
 gender = pd.read_csv('gender.csv')
 gender.actor_id = gender.actor_id.astype(str)

@@ -1,4 +1,5 @@
 import sys
+import os
 from argparse import ArgumentParser
 from prepare_data import *
 from import_data import *
@@ -34,12 +35,19 @@ def _run():
     updater.import_data()
     # enhance gender
     if enhance_gender:
-        actor = pre.column_dict['actor']
-        gender = [get_gender(name) for name in actor.name]
-        actor['gender'] = gender
-        updater.update_record(actor, updater.table_connection['actor'], 'actor_id', 'gender')
+        alter_query = 'ALTER TABLE actor ADD gender varchar(45);'
+        updater.sql_session.execute(alter_query)
+        if os.path.exists('gender.csv'):
+            gender = pd.read_csv('gender.csv')
+            gender.actor_id = gender.actor_id.astype(str)
+        else:
+            actor = pre.column_dict['actor']
+            gender_list = [get_gender(name) for name in actor.name]
+            actor['gender'] = gender_list
+            gender = actor[['actor_id', 'gender']]
+        updater.update_record(gender, updater.table_connection['actor'], 'actor_id', 'gender')
 
 
 if __name__ == '__main__':
-    # python main -d netflix_titles.csv -db netflix_db -q create_table.sql -g
+    # python main.py -d netflix_titles.csv -db netflix_db -q create_table.sql -g
     sys.exit(_run())

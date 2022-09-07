@@ -1,5 +1,4 @@
-from sqlalchemy import create_engine, Table, MetaData
-from sqlalchemy import text
+from sqlalchemy import create_engine, Table, MetaData, text
 from sqlalchemy.orm import sessionmaker
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import database_exists, create_database
