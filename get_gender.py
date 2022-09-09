@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import csv
 from argparse import ArgumentParser
-from error_trap import Logger
+from utilities.error_trap import Logger
 
 
 def get_gender(name):

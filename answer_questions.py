@@ -1,7 +1,6 @@
 import re
 import sys
 from argparse import ArgumentParser
-
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 

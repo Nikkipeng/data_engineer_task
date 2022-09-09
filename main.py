@@ -1,21 +1,23 @@
 import sys
 import os
 from argparse import ArgumentParser
-from prepare_data import *
-from import_data import *
+from time import sleep
+
+from utilities.prepare_data import *
+from utilities.import_data import *
 from get_gender import get_gender
 
 
 def _run():
     parser = ArgumentParser()
     parser.add_argument(
-        '-d', '--data', type=str, help='file address for input data')
+        '-f', '--file', type=str, help='file address for input data')
     parser.add_argument(
         '-db', '--db_name', type=str, help='name of database')
     parser.add_argument(
         '-q', '--query', type=str, help='file for query to create tables')
     parser.add_argument(
-        '-g', '--gender', type=bool, default=False, help='enhance gender'
+        '-g', '--gender', action='store_true', default=False, help='enhance gender'
     )
     args = parser.parse_args()
     file = args.file  # 'netflix_titles.csv'
@@ -32,11 +34,17 @@ def _run():
     engine = create_db(db_name)
     create_table(engine, query)
     updater = UpdateTable(engine, pre.column_dict)
+    updater.get_table()
     updater.import_data()
     # enhance gender
     if enhance_gender:
+        # alter gender column
         alter_query = 'ALTER TABLE actor ADD gender varchar(45);'
         updater.sql_session.execute(alter_query)
+        updater.sql_session.commit()
+        # reconnect table
+        updater = UpdateTable(engine, pre.column_dict)
+        updater.get_table()
         if os.path.exists('gender.csv'):
             gender = pd.read_csv('gender.csv')
             gender.actor_id = gender.actor_id.astype(str)
@@ -46,6 +54,8 @@ def _run():
             actor['gender'] = gender_list
             gender = actor[['actor_id', 'gender']]
         updater.update_record(gender, updater.table_connection['actor'], 'actor_id', 'gender')
+
+    updater.close_session()
 
 
 if __name__ == '__main__':
