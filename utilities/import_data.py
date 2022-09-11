@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, Table, MetaData, text
 from sqlalchemy.orm import sessionmaker
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy.exc import IntegrityError
 
 
 def _make_session(engine):
@@ -16,8 +17,8 @@ def _make_metadata():
     return metadata
 
 
-def create_db(db_name):
-    engine = create_engine("mysql+pymysql://root:pxp940524@localhost:3307/{}".format(db_name))
+def create_db(root, password, db_name):
+    engine = create_engine("mysql+pymysql://{}:{}@localhost:3307/{}".format(root, password, db_name))
     if not database_exists(engine.url):
         create_database(engine.url)
     return engine
@@ -81,11 +82,14 @@ class UpdateTable:
         batch_number = update_length // batch_size + 1
         # with self.sql_session.begin_nested():
         for batch_index in range(batch_number):
-            self.sql_session.execute(
-                table.insert(),
-                data[batch_index * batch_size:
-                     (batch_index + 1) * batch_size].to_dict('records')
-            )
+            try:
+                self.sql_session.execute(
+                    table.insert(),
+                    data[batch_index * batch_size:
+                         (batch_index + 1) * batch_size].to_dict('records')
+                )
+            except IntegrityError:
+                print('data[{}: {}] has duplicate records on primary key'.format(batch_index * batch_size, (batch_index + 1) * batch_size))
             try:
                 print('Commit {} batches inserted to {}'.format(batch_index + 1, table.fullname))
                 self.sql_session.commit()
@@ -98,6 +102,11 @@ class UpdateTable:
         print('Insert {} completed'.format(table.fullname))
 
     def update_record(self, data, table, index: str, column: str):
+        if not table:
+            print("Table not exist")
+            return
+        if [index, column] not in table.c.keys():
+            print("Data columns doesn't match")
         print('Replace records')
         update_length = len(data)
         batch_size = 10000
