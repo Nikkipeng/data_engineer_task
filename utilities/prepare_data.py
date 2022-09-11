@@ -5,12 +5,25 @@ from utilities.prepare_data_utilities import *
 def read_file(file):
     data = pd.read_csv(file).fillna('')  # netflix_titles.csv
     data = data[~data.show_id.isna()].copy()  # skipped empty rows
+    return data
+
+
+def data_clean(data):
     # data clean
-    data.loc[1058, 'cast'] = ''  # s1059 cast is same as description
     # empty character \u200b in title
     data.title = [tup.title.replace('\u200b', '') for tup in data.itertuples()]
+    # data.title = data.title.astype(str)
     # make a numeric id for indexing
     data['id'] = [show_id[1:] for show_id in data.show_id]
+    # s1059 cast is same as description
+    if 'cast' in data.columns:
+        # data.cast[data.cast == data.description] = ''
+        mask = data.cast == data.description
+        data.loc[mask, 'cast'] = ''
+    if 'director' in data.columns:
+        # data.director[data.director == data.description] = ''
+        mask = data.director == data.description
+        data.loc[mask, 'director'] = ''
     return data
 
 
@@ -21,8 +34,6 @@ field_names = ['name', 'name', 'category', 'country', 'date']
 class PrepareData:
     def __init__(self, data):
         self.column_dict = dict()
-        for name in individual_columns:
-            self.column_dict[name] = []
         self.name_dict = dict(zip(individual_columns, field_names))
         self.data = data
         # incase input data don't have all data field
@@ -31,6 +42,8 @@ class PrepareData:
             if column not in self.data_column:
                 individual_columns.remove(column)
                 self.name_dict.pop(column)
+        for name in individual_columns:
+            self.column_dict[name] = []
 
     # prepare individual columns
     def prepare_data(self):
