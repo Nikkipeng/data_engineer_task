@@ -1,7 +1,6 @@
 import sys
 import os
 from argparse import ArgumentParser
-from time import sleep
 
 from utilities.prepare_data import *
 from utilities.import_data import *
@@ -24,14 +23,17 @@ def _run():
     db_name = args.db_name  # 'netflix_db'
     query = args.query  # 'create_table.sql'
     enhance_gender = args.gender
+    root = input('Enter your user name for db connection\n')
+    password = input('Enter your password for db connection\n')
 
     # prepare import data
     data = read_file(file)
+    data = data_clean(data)
     pre = PrepareData(data)
     pre.prepare_data()
     pre.prepare_table()
     # create mysql db
-    engine = create_db(db_name)
+    engine = create_db(root, password, db_name)
     create_table(engine, query)
     updater = UpdateTable(engine, pre.column_dict)
     updater.get_table()
@@ -39,12 +41,15 @@ def _run():
     # enhance gender
     if enhance_gender:
         # alter gender column
-        alter_query = 'ALTER TABLE actor ADD gender varchar(45);'
-        updater.sql_session.execute(alter_query)
-        updater.sql_session.commit()
-        # reconnect table
-        updater = UpdateTable(engine, pre.column_dict)
-        updater.get_table()
+        print('Enhance gender')
+        actor_columns = pd.DataFrame(updater.sql_session.execute('show columns from actor').all())
+        if 'gender' not in actor_columns.Field.to_list():
+            alter_query = 'ALTER TABLE actor ADD COLUMN IF NOT EXISTS gender varchar(45);'
+            updater.sql_session.execute(alter_query)
+            updater.sql_session.commit()
+            # reconnect table
+            updater = UpdateTable(engine, pre.column_dict)
+            updater.get_table()
         if os.path.exists('gender.csv'):
             gender = pd.read_csv('gender.csv')
             gender.actor_id = gender.actor_id.astype(str)
@@ -60,4 +65,5 @@ def _run():
 
 if __name__ == '__main__':
     # python main.py -d netflix_titles.csv -db netflix_db -q create_table.sql -g
+    # python main.py -d miss_field_test.csv -db test -q create_table.sql -g
     sys.exit(_run())
