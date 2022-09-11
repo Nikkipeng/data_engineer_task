@@ -172,7 +172,7 @@ show_director_table = Table('show_director', metadata, autoload=True, autoload_w
 # sql_session.execute(actor_table.delete())
 
 
-from import_data import insert_record
+from utilities.import_data import insert_record
 insert_record(sql_session, actors, actor_table)
 insert_record(sql_session, categories, category_table)
 insert_record(sql_session, countries, country_table)
@@ -194,13 +194,13 @@ insert_record(sql_session, show_director, show_director_table)
 actors_for_gender = actors[['actor_id', 'name']]
 actors_for_gender.to_csv('actors_for_gender.csv', index=False)
 # run getting gender
-# python get_gender --log_name request_gender --out_name gender.csv --input_name actors_for_gender.csv
+# python get_gender.py --log_name request_gender --out_name gender.csv --input_name actors_for_gender.csv
 
 gender = pd.read_csv('gender.csv')
 gender.actor_id = gender.actor_id.astype(str)
 
 # ALTER TABLE actor ADD gender varchar(45);
-from import_data import update_record
+from utilities.import_data import update_record
 update_record(sql_session, gender, actor_table, 'actor_id', 'gender')
 
 
