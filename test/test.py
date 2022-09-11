@@ -6,6 +6,7 @@ from utilities.import_data import *
 file = '../netflix_titles.csv'
 # prepare import data
 data = read_file(file)
+data = data_clean(data)
 test_data = data[:5].copy()
 test_tup = data.iloc[1]
 name_dict = dict(zip(individual_columns, field_names))
