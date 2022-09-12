@@ -1,9 +1,9 @@
 import re
 import sys
 from argparse import ArgumentParser
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
-
+from utilities.db_connection_utilities import db_connector
 
 file = open("questions.sql")
 sql_script = file.readlines()
@@ -26,27 +26,29 @@ for line in sql_script:
             sql_command = ''
 
 
-def connect_db(db_name):
-    engine = create_engine("mysql+pymysql://root:pxp940524@localhost:3307/{}".format(db_name))
-    session_maker = sessionmaker(bind=engine.connect())
-    sql_session = session_maker()
-    return sql_session
-
-
 def _run():
     parser = ArgumentParser()
     parser.add_argument(
         '-db', '--db_name', type=str, help='name of database')
+    parser.add_argument(
+        '-c', '--config', type=str, default=None, help='config file for db connection'
+    )
     args = parser.parse_args()
     db_name = args.db_name
+    config = args.config
 
     input_massage = "Which question you curious?\n"
     for que in questions:
         input_massage += que['question']
     continue_question = 'y'
-    sql_session = connect_db(db_name)
+    engine = db_connector(config_path=config, db_name=db_name)
+    session_maker = sessionmaker(bind=engine.connect())
+    sql_session = session_maker()
     while continue_question != 'n':
         input_question = int(input(input_massage))
+        if input_question not in range(len(questions)):
+            print('Error input')
+            continue
         query = questions[input_question - 1]['sql_command']
         answer = sql_session.execute(text(query)).all()
         print(answer)

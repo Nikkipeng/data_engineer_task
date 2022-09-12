@@ -1,0 +1,9 @@
+{
+    "dialect": "mysql",
+    "connector": "pymysql",
+    "host": "localhost",
+    "user": "root",
+    "password": "pxp940524",
+    "port": 3307,
+    "db_name": "netflix_db"
+}

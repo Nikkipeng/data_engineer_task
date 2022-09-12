@@ -50,4 +50,5 @@ def _run():
 
 
 if __name__ == '__main__':
+    # python get_gender.py --log_name request_gender --out_name gender.csv --input_name actors_for_gender.csv
     sys.exit(_run())

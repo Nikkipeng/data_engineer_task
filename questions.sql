@@ -1,19 +1,24 @@
---  1. What is the most common first name among actresses?
+--  1. What is the most common first name among all gender?
+select first_name, count(actor_id) num from actor
+group by first_name
+order by num desc limit 1;
+-- Michael for all 263
+
+--  2. What is the most common first name among actresses?
 select first_name, count(actor_id) num from actor
 where gender = 'female'
 group by first_name
 order by num desc limit 1;
--- Michael for all 263
--- Michael for male 120
--- Michael for female 77
+-- Michael for female 86
 
---  2. What is the most common first name among actors?
+--  3. What is the most common first name among actors?
 select first_name, count(actor_id) num from actor
 where gender = 'male'
 group by first_name
-order by num desc;
+order by num desc limit 1;
+-- David for male 113
 
---  3. Which Movie had the longest timespan from release to appearing on Netflix?
+--  4. Which Movie had the longest timespan from release to appearing on Netflix?
 select show_id, title,  date_added, release_year, year(date_added) - release_year year_diff
 from netflix_db.show
 where release_year < year(date_added)
@@ -22,19 +27,19 @@ order by year_diff desc limit 1;
 -- 93 years, no same year diff, so it's exact result
 
 -- Which Month of the year had the most new releases historically?
---  4. Which exact month for exact year that had the most new releases historically?
+--  5. Which exact month for exact year that had the most new releases historically?
 select count(id) num, month(date_added) mon, year(date_added) yea from netflix_db.show
 group by mon, yea
 order by num desc limit 1;
 -- Nov, 2019  272
 
---  5. Which month among 12 months during a year that had the most new releases historically?
+--  6. Which month among 12 months during a year that had the most new releases historically?
 select count(id) num, month(date_added) mon from netflix_db.show
 group by mon
 order by num desc limit 1;
 -- Dec   833 
 
---  6. Which year had the largest increase year on year (percentage wise) for TV Shows?
+--  7. Which year had the largest increase year on year (percentage wise) for TV Shows?
 with temp as (select count(id) num, year(date_added) yea
 from netflix_db.show
 where type = 'TV Show'
@@ -48,7 +53,7 @@ order by increase_yoy desc limit 1
 ;
 -- 2016 over 2015 increase 516.7% 
 
---  7. List the actresses that have appeared in a movie with Woody Harrelson more than once.
+--  8. List the actresses that have appeared in a movie with Woody Harrelson more than once.
 --select * from actor where name = 'Woody Harrelson';  -- actor id 30326
 select distinct(show_actor1.actor_id), actor.name from show_actor show_actor1
 join show_actor show_actor2 

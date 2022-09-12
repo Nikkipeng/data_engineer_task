@@ -2,6 +2,8 @@ import unittest
 from utilities.prepare_data import *
 from utilities.prepare_data_utilities import *
 from utilities.import_data import *
+from utilities.db_connection_utilities import *
+
 
 file = '../netflix_titles.csv'
 # prepare import data
@@ -59,7 +61,7 @@ class TestValuationFormula(unittest.TestCase):
 
 
 class TestCreateDB(unittest.TestCase):
-    engine = create_db('test')
+    engine = db_connector(db_name='test')
     session_maker = sessionmaker(bind=engine.connect())
     sql_session = session_maker()
 
@@ -72,7 +74,7 @@ class TestCreateDB(unittest.TestCase):
 
 
 class TestCreateTable(unittest.TestCase):
-    engine = create_db('test')
+    engine = db_connector(db_name='test')
     session_maker = sessionmaker(bind=engine.connect())
     sql_session = session_maker()
 
@@ -88,7 +90,7 @@ class TestCreateTable(unittest.TestCase):
 
 
 class TestImportData(unittest.TestCase):
-    engine = create_db('test')
+    engine = db_connector(db_name='test')
     pre_data = PrepareData(test_data)
     pre_data.prepare_data()
     pre_data.prepare_table()
@@ -130,7 +132,7 @@ class TestImportData(unittest.TestCase):
 class DropTables(unittest.TestCase):
     def test_drop_tables(self):
         print('drop db test')
-        self.engine = create_db('test')
+        self.engine = db_connector(db_name='test')
         session_maker = sessionmaker(bind=self.engine.connect())
         self.sql_session = session_maker()
         self.sql_session.execute('DROP TABLE IF EXISTS `show_actor`;')

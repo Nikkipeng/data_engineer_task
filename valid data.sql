@@ -23,8 +23,9 @@ where description is null;
 -- all have description 
 
 
-SELECT max(duration) FROM netflix_db.show
--- where type = 'TV Show'
+SELECT id,  title, max(duration) FROM netflix_db.show
+ where type = 'TV Show'
+ group by id order by max(duration) desc
 ;
 -- max 16 season
 --  max 312 mins
