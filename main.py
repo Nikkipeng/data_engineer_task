@@ -20,7 +20,7 @@ def _run():
         '-g', '--gender', action='store_true', default=False, help='enhance gender'
     )
     parser.add_argument(
-        '-c', '--config', type=str, default=None, help='config file'
+        '-c', '--config', type=str, default=None, help='config file for db connection'
     )
     args = parser.parse_args()
     file = args.file  # 'netflix_titles.csv'
@@ -71,6 +71,6 @@ def _run():
 
 
 if __name__ == '__main__':
-    # python main.py -d netflix_titles.csv -db netflix_db -q create_table.sql -g
-    # python main.py -d miss_field_test.csv -db test -q create_table.sql -g
+    # python main.py -f netflix_titles.csv -db netflix_db -q create_table.sql -g
+    # python main.py -f miss_field_test.csv -db test -q create_table.sql -g
     sys.exit(_run())
