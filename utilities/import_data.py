@@ -1,7 +1,5 @@
-from sqlalchemy import create_engine, Table, MetaData, text
+from sqlalchemy import Table, MetaData
 from sqlalchemy.orm import sessionmaker
-# from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.exc import IntegrityError
 
 
@@ -15,41 +13,6 @@ def _make_metadata():
     # Base = declarative_base()  # create ORM
     metadata = MetaData()
     return metadata
-
-
-def create_db(root, password, db_name):
-    engine = create_engine("mysql+pymysql://{}:{}@localhost:3307/{}".format(root, password, db_name))
-    if not database_exists(engine.url):
-        create_database(engine.url)
-    return engine
-
-
-def create_table(engine, sql_file_name):
-    sql_session = _make_session(engine)
-    file = open(sql_file_name)  # "create_table.sql"
-    sql_script = file.readlines()
-    # Create an empty command string
-    sql_command = ''
-    # Iterate over all lines in the sql file
-    for line in sql_script:
-        # Ignore commented lines
-        if not line.startswith('--') and line.strip('\n'):
-            # Append line to the command string
-            sql_command += line.strip('\n')
-            # If the command string ends with ';', it is a full statement
-            if sql_command.endswith(';'):
-                # Try to execute statement and commit it
-                try:
-                    sql_session.execute(text(sql_command))
-                    sql_session.commit()
-                # Assert in case of error
-                except Exception as e:
-                    print(e)
-
-                # Finally, clear command string
-                finally:
-                    sql_command = ''
-    file.close()
 
 
 table_names = ['show', 'actor', 'director', 'country', 'category',
