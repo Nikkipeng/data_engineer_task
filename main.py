@@ -17,10 +17,12 @@ def _run():
     parser.add_argument(
         '-q', '--query', type=str, help='file for query to create tables')
     parser.add_argument(
-        '-g', '--gender', action='store_true', default=False, help='enhance gender'
+        '-g', '--gender', action='store_true', default=False,
+        help='enhance gender'
     )
     parser.add_argument(
-        '-c', '--config', type=str, default=None, help='config file for db connection'
+        '-c', '--config', type=str, default=None,
+        help='config file for db connection'
     )
     args = parser.parse_args()
     file = args.file  # 'netflix_titles.csv'
@@ -49,9 +51,10 @@ def _run():
     if enhance_gender:
         # alter gender column
         print('Enhance gender')
-        actor_columns = pd.DataFrame(updater.sql_session.execute('show columns from actor').all())
+        actor_columns = pd.DataFrame(
+            updater.sql_session.execute('show columns from actor').all())
         if 'gender' not in actor_columns.Field.to_list():
-            alter_query = 'ALTER TABLE actor ADD COLUMN IF NOT EXISTS gender varchar(45);'
+            alter_query = 'ALTER TABLE actor ADD COLUMN gender varchar(45);'
             updater.sql_session.execute(alter_query)
             updater.sql_session.commit()
             # reconnect table
@@ -65,7 +68,8 @@ def _run():
             gender_list = [get_gender(name) for name in actor.name]
             actor['gender'] = gender_list
             gender = actor[['actor_id', 'gender']]
-        updater.update_record(gender, updater.table_connection['actor'], 'actor_id', 'gender')
+        updater.update_record(gender, updater.table_connection['actor'],
+                              'actor_id', 'gender')
 
     updater.close_session()
 

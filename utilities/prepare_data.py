@@ -75,29 +75,39 @@ class PrepareData:
         # make actor, director, category, country table (id, name)
         tables = list(self.column_dict.keys())
         for column in tables:
-            explode_df = explode_data(self.column_dict[column], self.name_dict[column])
+            explode_df = explode_data(
+                self.column_dict[column], self.name_dict[column]
+            )
             name_list = get_all_names(explode_df, self.name_dict[column])
-            pair_df = make_pairs_table(name_list, column, self.name_dict[column])
-            self.column_dict['show_' + column] = map_ids(explode_df, pair_df, column, self.name_dict[column])
+            pair_df = make_pairs_table(
+                name_list, column, self.name_dict[column]
+            )
+            self.column_dict['show_' + column] = map_ids(
+                explode_df, pair_df, column, self.name_dict[column]
+            )
             # add first_name and last_name
             if column == 'actor' or column == 'director':
-                pair_df['first_name'] = [name.split(' ')[0] for name in pair_df.name]
-                pair_df['last_name'] = [name.split(' ')[-1] for name in pair_df.name]
+                pair_df['first_name'] = [name.split(' ')[0]
+                                         for name in pair_df.name]
+                pair_df['last_name'] = [name.split(' ')[-1]
+                                        for name in pair_df.name]
             self.column_dict[column] = pair_df
         # change name for category_id and show_id map table
         self.column_dict['list_category'] = self.column_dict.pop('show_category')
         # show table
         data_column = set(self.data_column)
-        column_needed = {'id', 'show_id', 'type', 'title', 'date_added', 'release_year', 'rating', 'duration',
-                         'description'}
+        column_needed = {'id', 'show_id', 'type', 'title', 'date_added',
+                         'release_year', 'rating', 'duration', 'description'}
         show_column = data_column.intersection(column_needed)
         show = self.data[list(show_column)].copy()
         if 'duration' in show_column:
-            show.duration = [duration.split(' ')[0] for duration in show.duration]
+            show.duration = [duration.split(' ')[0]
+                             for duration in show.duration]
         if 'rating' in show_column:
             show.rating = [None if not rate else rate for rate in show.rating]
         if 'date_added' in show_column:
-            show.date_added = [None if not date_added else date_added for date_added in show.date_added]
+            show.date_added = [None if not date_added else date_added
+                               for date_added in show.date_added]
         # self.column_dict['show'] = show
         show_dict = {'show': show}
         show_dict.update(self.column_dict)

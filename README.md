@@ -61,7 +61,6 @@ python main.py -f netflix_titles.csv -db netflix_db -q create_table.sql -g
 | description | String | The summary description |
 
 ## Data modeling
-
 ![Alt text](data_model_diagram.png)
 
 ## Files introduction
@@ -95,8 +94,10 @@ And save the result into *gender.csv*.
 - 31 records' date_added smaller than release year (Strange)
 
 ## Answer questions
+
 Can call by command ```python answer_questions.py -db netflix_db```
 Then it will ask which one of fallowing you want to know and give back the result.
+
 
 - What is the most common first name among actors and actresses?
 ```
