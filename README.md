@@ -38,6 +38,7 @@ python main.py -f netflix_titles.csv -db netflix_db -q create_table.sql -g
 - netflix_titles.csv : netflix show data
 - netflix_db : db name I set
 - create_table.sql : db schema
+- enhance gender or not.
 - default config file is config.json (set my own laptop config)
 
 
