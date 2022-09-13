@@ -95,6 +95,8 @@ And save the result into *gender.csv*.
 - 31 records' date_added smaller than release year (Strange)
 
 ## Answer questions
+Can call by command ```python answer_questions.py -db netflix_db```
+Then it will ask which one of fallowing you want to know and give back the result.
 
 - What is the most common first name among actors and actresses?
 ```
