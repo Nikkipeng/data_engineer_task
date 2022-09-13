@@ -60,6 +60,7 @@ python main.py -f netflix_titles.csv -db netflix_db -q create_table.sql -g
 | description | String | The summary description |
 
 ## Data modeling
+
 ![Alt text](data_model.png)
 
 ## Files introduction
