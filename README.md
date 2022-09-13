@@ -61,7 +61,7 @@ python main.py -f netflix_titles.csv -db netflix_db -q create_table.sql -g
 
 ## Data modeling
 
-![Alt text](data_model.png)
+![Alt text](data_model_diagram.png)
 
 ## Files introduction
 - *utilities package* contains the functions that used to create database and import data into the database.
