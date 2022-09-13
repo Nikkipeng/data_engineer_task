@@ -31,7 +31,8 @@ def _run():
     parser.add_argument(
         '-db', '--db_name', type=str, help='name of database')
     parser.add_argument(
-        '-c', '--config', type=str, default=None, help='config file for db connection'
+        '-c', '--config', type=str, default=None,
+        help='config file for db connection'
     )
     args = parser.parse_args()
     db_name = args.db_name
